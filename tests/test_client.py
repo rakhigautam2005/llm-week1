@@ -4,7 +4,11 @@ from llm.client import ask
 
 
 class FakeCompletions:
-    def create(self, model, messages):
+    def __init__(self):
+        self.last_kwargs = {}
+
+    def create(self, **kwargs):
+        self.last_kwargs = kwargs  # remember what ask() sent
         return SimpleNamespace(
             choices=[
                 SimpleNamespace(message=SimpleNamespace(content="A token is a chunk of text."))
@@ -14,7 +18,8 @@ class FakeCompletions:
 
 
 class FakeClient:
-    chat = SimpleNamespace(completions=FakeCompletions())
+    def __init__(self):
+        self.chat = SimpleNamespace(completions=FakeCompletions())
 
 
 def test_ask_returns_text_tokens_and_cost():
@@ -23,3 +28,14 @@ def test_ask_returns_text_tokens_and_cost():
     assert result.input_tokens == 12
     assert result.output_tokens == 8
     assert result.cost_usd > 0
+
+
+def test_ask_sends_only_chosen_settings():
+    client = FakeClient()
+    ask("hi", "gpt-4o-mini", client=client)
+    assert "temperature" not in client.chat.completions.last_kwargs
+
+    ask("hi", "gpt-4o-mini", client=client, temperature=0.0, reasoning_effort="high")
+    sent = client.chat.completions.last_kwargs
+    assert sent["temperature"] == 0.0
+    assert sent["reasoning_effort"] == "high"
