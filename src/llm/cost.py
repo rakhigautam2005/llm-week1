@@ -3,6 +3,7 @@
 # USD per 1 million tokens. Prices change: check the provider's pricing page.
 PRICES: dict[str, dict[str, float]] = {
     "gpt-4o-mini": {"input": 0.15, "output": 0.60},
+    "gemini-2.5-flash-lite": {"input": 0.10, "output": 0.40},
     "gemini-3.1-flash-lite": {"input": 0.25, "output": 1.50},
 }
 

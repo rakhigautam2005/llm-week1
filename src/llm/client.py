@@ -19,13 +19,27 @@ class LLMResult(BaseModel):
     latency_s: float
 
 
-def ask(prompt: str, model: str, client: OpenAI | None = None) -> LLMResult:
+def ask(
+    prompt: str,
+    model: str,
+    client: OpenAI | None = None,
+    temperature: float | None = None,
+    reasoning_effort: str | None = None,
+) -> LLMResult:
     """Send one prompt and return the answer with its usage numbers."""
     client = client or OpenAI()  # reads OPENAI_API_KEY and OPENAI_BASE_URL from env
+
+    options = {}  # only send settings we actually chose
+    if temperature is not None:
+        options["temperature"] = temperature
+    if reasoning_effort is not None:
+        options["reasoning_effort"] = reasoning_effort
+
     start = time.perf_counter()
     response = client.chat.completions.create(
         model=model,
         messages=[{"role": "user", "content": prompt}],
+        **options,
     )
     latency = time.perf_counter() - start
 
